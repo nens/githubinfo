@@ -10,6 +10,7 @@ long_description = '\n\n'.join([
 
 install_requires = [
     'setuptools',
+    'requests >= 1.1.0',
     ],
 
 tests_require = [
