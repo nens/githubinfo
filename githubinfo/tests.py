@@ -84,3 +84,10 @@ class CommitTest(unittest.TestCase):
     def test_testcommits(self):
         commit = commits.Commit(self.sample_commit_dict)
         self.assertTrue(commit.is_testcommit)
+
+
+class TestCommitCounterTest(unittest.TestCase):
+
+    def test_smoke(self):
+        counter = commits.TestCommitCounter()
+        self.assertTrue(counter)

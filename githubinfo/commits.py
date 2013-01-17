@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 import datetime
+from collections import defaultdict
 
 import requests
 
@@ -73,3 +74,123 @@ class Commit(object):
     @property
     def is_testcommit(self):
         return bool(self.num_testfiles_changed)
+
+
+class TestCommitCounter(object):
+    num_commits = 0
+    num_testcommits = 0
+    testfiles_changed = 0
+
+    def __cmp__(self, other):
+        return cmp((-self.num_testcommits, self.num_commits),
+                   (-other.num_testcommits, other.num_commits))
+
+    def add_commit(self, commit):
+        self.num_commits += 1
+        if commit.is_testcommit:
+            self.num_testcommits += 1
+            self.testfiles_changed += commit.num_testfiles_changed
+
+    @property
+    def percentage(self):
+        """Return percentage of test commits to total.
+
+        Return it as a string including parentheses.
+
+        If there are no test commits, omit the percentage.
+        """
+        if not self.num_testcommits:
+            return ''
+        result = str(int(100.0 * self.num_testcommits / self.num_commits))
+        return '({}%)'.format(result)
+
+    def print_info(self):
+
+        msg = "{name}: {tested} {percentage}"
+        print(msg.format(name=self.name,
+                         tested=self.num_testcommits,
+                         percentage=self.percentage))
+
+
+class Project(TestCommitCounter):
+
+    def __init__(self, owner, project, users):
+        self.owner = owner
+        self.name = project
+        self.users = users
+        debug("Loading project {}...".format(self.name))
+        self.commits = self.load_project_commits()
+        self.load_individual_commits()
+
+    def load_project_commits(self):
+        url = COMMITS_URL.format(owner=self.owner, project=self.name)
+        return grab_json(url, params={'since': since})
+
+    def load_individual_commits(self):
+        for commit in self.commits:
+            the_commit = Commit(commit)
+            self.users[the_commit.user].add_commit(the_commit)
+            self.add_commit(the_commit)
+
+    @property
+    def is_active(self):
+        return bool(self.num_commits)
+
+
+class User(TestCommitCounter):
+    name = None  # We set that from within the commits.
+
+    def add_commit(self, commit):
+        if not self.name:
+            self.name = commit.user
+        TestCommitCounter.add_commit(self, commit)
+
+
+def main():
+    # TODO: update settings.
+
+    users = defaultdict(User)
+    projects = []
+
+    for organisation in SETTINGS['organisations']:
+        url = ORG_REPOS_URL.format(organisation=organisation)
+        repos = grab_json(url)
+        project_names = [repo['name'] for repo in repos]
+        for project_name in project_names:
+            project = Project(organisation, project_name, users)
+            if project.is_active:
+                projects.append(project)
+
+    users = users.values()  # Defaultdict isn't handy anymore here.
+    users.sort()
+    projects.sort()
+    print("""
+Nelen & Schuurmans test statistics
+==================================
+
+We want more and better testing. For a quick and dirty quantity
+indication ('more'), here are the commits that have the string
+'test' in of of the commit's touched filenames.
+
+Period: {period} days.
+Github organisations that I queried: {orgs}
+
+Projects sorted by amount of commits with tests
+-----------------------------------------------
+
+""").format(period=SETTINGS['days'],
+            orgs=', '.join(SETTINGS['organisations']))
+    for project in projects:
+        project.print_info()
+    print("""
+
+Committers sorted by amount of commits with tests
+-------------------------------------------------
+
+""")
+    for user in users:
+        user.print_info()
+
+
+if __name__ == '__main__':
+    main()
