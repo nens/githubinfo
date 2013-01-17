@@ -13,6 +13,8 @@ install_requires = [
     ],
 
 tests_require = [
+    'mock',
+    'coverage',
     ]
 
 setup(name='githubinfo',
