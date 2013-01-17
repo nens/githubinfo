@@ -45,3 +45,31 @@ def grab_json(url, params=None):
         # The assumption is "paginated content means it is a list".
         result += grab_json(url, params=params)
     return result
+
+
+def is_testfile(filepath):
+    if 'testsettings.py' in filepath:
+        # This one almost always doesn't have anything to do with
+        # an added test.
+        return False
+    if 'test' in filepath:
+        return True
+    return False
+
+
+class Commit(object):
+    """Wrapper around a commit dict from github's API."""
+
+    def __init__(self, the_dict):
+        self.num_testfiles_changed = 0
+        self.user = the_dict['commit']['committer']['name']
+        commit_url = the_dict['url']
+        commit_info = grab_json(commit_url)
+        for changed_file in commit_info.get('files', []):
+            if is_testfile(changed_file['filename']):
+                self.num_testfiles_changed += 1
+                debug("Test file: {}".format(changed_file['filename']))
+
+    @property
+    def is_testcommit(self):
+        return bool(self.num_testfiles_changed)

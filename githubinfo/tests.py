@@ -12,7 +12,7 @@ from githubinfo import commits
 FIXED_DATE = datetime.datetime(year=1972, month=12, day=25)
 
 
-class CommitTest(unittest.TestCase):
+class UtilitiesTest(unittest.TestCase):
 
     def test_since(self):
         def mock_now():
@@ -37,3 +37,50 @@ class CommitTest(unittest.TestCase):
         result = commits.grab_json(url)
         print(result)
         self.assertTrue(len(result) > 30)
+
+    def is_testfile1(self):
+        self.assertTrue(commits.is_testfile('myproject/tests.py'))
+
+    def is_testfile2(self):
+        self.assertTrue(commits.is_testfile('myproject/test_thingy.js'))
+
+    def is_testfile3(self):
+        self.assertFalse(commits.is_testfile('myproject/testsettings.py'))
+
+    def is_testfile4(self):
+        self.assertFalse(commits.is_testfile('myproject/README.rst'))
+
+
+def mock_commit_grabber1(url):
+    return {'files': [{'filename': 'myproject/README.txt'}]}
+
+
+def mock_commit_grabber2(url):
+    return {'files': [{'filename': 'myproject/README.txt'},
+                      {'filename': 'myproject/tests.py'}]}
+
+
+class CommitTest(unittest.TestCase):
+    sample_commit_dict = {
+        'commit': {
+            'committer': {
+                'name': 'Reinout van Rees'
+                },
+            },
+        'url': 'http://example.org/dummy',
+        }
+
+    @mock.patch('githubinfo.commits.grab_json')
+    def test_init(self, patched_grab_json):
+        commit = commits.Commit(self.sample_commit_dict)
+        self.assertEquals(commit.user, 'Reinout van Rees')
+
+    @mock.patch('githubinfo.commits.grab_json', new=mock_commit_grabber1)
+    def test_no_testcommits(self):
+        commit = commits.Commit(self.sample_commit_dict)
+        self.assertFalse(commit.is_testcommit)
+
+    @mock.patch('githubinfo.commits.grab_json', new=mock_commit_grabber2)
+    def test_testcommits(self):
+        commit = commits.Commit(self.sample_commit_dict)
+        self.assertTrue(commit.is_testcommit)
