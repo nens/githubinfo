@@ -1,0 +1,12 @@
+language: python
+python:
+  - 2.7
+notifications:
+  irc:
+    channels: "irc.freenode.org#nens"
+    on_success: change
+install:
+  - python bootstrap.py
+  - bin/buildout
+script:
+  - bin/test
