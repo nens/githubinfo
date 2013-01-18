@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-import datetime
 from collections import defaultdict
+import datetime
+import json
+import os
 
 import requests
 
@@ -38,7 +40,10 @@ def since():
 
 def grab_json(url, params=None):
     """Return json from URL, including handling pagination."""
-    req = requests.get(url, auth=SETTINGS['auth'], params=params)
+    auth = SETTINGS['auth']
+    if isinstance(auth, list):
+        auth = tuple(auth)
+    req = requests.get(url, auth=auth, params=params)
     result = req.json()
     if req.links.get('next'):
         # Paginated content, so we want to grab the rest.
@@ -148,6 +153,9 @@ class User(TestCommitCounter):
 
 def main():
     # TODO: update settings.
+    if os.path.exists('settings.json'):
+        custom_settings = json.loads(open('settings.json').read())
+        SETTINGS.update(custom_settings)
 
     users = defaultdict(User)
     projects = []
@@ -178,8 +186,8 @@ Github organisations that I queried: {orgs}
 Projects sorted by amount of commits with tests
 -----------------------------------------------
 
-""").format(period=SETTINGS['days'],
-            orgs=', '.join(SETTINGS['organisations']))
+""".format(period=SETTINGS['days'],
+            orgs=', '.join(SETTINGS['organisations'])))
     for project in projects:
         project.print_info()
     print("""
