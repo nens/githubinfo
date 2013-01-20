@@ -124,3 +124,21 @@ class TestCommitCounterTest(unittest.TestCase):
         some_list = [self.b, self.a]
         some_list.sort()
         self.assertEquals(some_list[0], self.a)
+
+    def test_add_commit1(self):
+        commit = mock.Mock()
+        commit.is_testcommit = False
+        commit.num_testfiles_changed = 0
+        self.a.add_commit(commit)
+        self.assertEquals(self.a.num_commits, 1)
+        self.assertEquals(self.a.num_testcommits, 0)
+
+    def test_add_commit2(self):
+        commit = mock.Mock()
+        commit.is_testcommit = True
+        commit.num_testfiles_changed = 3
+        self.a.add_commit(commit)
+        self.a.add_commit(commit)  # Another time!
+        self.assertEquals(self.a.num_commits, 2)
+        self.assertEquals(self.a.num_testcommits, 2)
+        self.assertEquals(self.a.testfiles_changed, 6)
