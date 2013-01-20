@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import copy
 import datetime
 import unittest
 import mock
@@ -29,6 +30,17 @@ class UtilitiesTest(unittest.TestCase):
         print("rate limit. Some of the tests really hit the API...")
         print(result)
         self.assertTrue('rate' in result)
+
+    def test_grab_json_with_json_auth(self):
+        # This hits a real URL, but doesn't incur a rate limit.
+        # The auth is a user/pass list (from json) but the requests lib needs
+        # a tuple. This test checks whether it works properly that way.
+        url = 'https://api.github.com/rate_limit'
+        new_settings = copy.deepcopy(commits.SETTINGS)
+        new_settings['auth'] = ['atilla_the_hun', 'nonexisting_password']
+        with mock.patch('githubinfo.commits.SETTINGS', new_settings):
+            result = commits.grab_json(url)
+            self.assertEquals({'message': 'Bad credentials'}, result)
 
     def test_grab_paginated_json(self):
         # This hits a real URL and incurs a rate limit...
@@ -88,6 +100,27 @@ class CommitTest(unittest.TestCase):
 
 class TestCommitCounterTest(unittest.TestCase):
 
+    def setUp(self):
+        self.a = commits.TestCommitCounter()
+        self.b = commits.TestCommitCounter()
+
     def test_smoke(self):
-        counter = commits.TestCommitCounter()
-        self.assertTrue(counter)
+        self.assertTrue(self.a)
+
+    def test_sorting(self):
+        # More testcommits? On top.
+        self.a.num_testcommits = 10
+        self.b.num_testcommits = 5
+        some_list = [self.b, self.a]
+        some_list.sort()
+        self.assertEquals(some_list[0], self.a)
+
+    def test_sorting(self):
+        # Equal qua testcommits? Percentage wins.
+        self.a.num_testcommits = 10
+        self.b.num_testcommits = 10
+        self.a.num_commits = 10
+        self.b.num_commits = 20
+        some_list = [self.b, self.a]
+        some_list.sort()
+        self.assertEquals(some_list[0], self.a)
