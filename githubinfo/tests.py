@@ -155,3 +155,9 @@ class TestCommitCounterTest(unittest.TestCase):
         self.a.num_commits = 20
         self.a.num_testcommits = 10
         self.assertEquals(self.a.percentage, '(50%)')
+
+    def test_print_info(self):
+        self.a.name = 'Some name'
+        with mock.patch('sys.stdout') as mock_stdout:
+            self.a.print_info()
+            self.assertTrue(mock_stdout.write.called)

@@ -110,7 +110,6 @@ class TestCommitCounter(object):
         return '({}%)'.format(result)
 
     def print_info(self):
-
         msg = "{name}: {tested} {percentage}"
         print(msg.format(name=self.name,
                          tested=self.num_testcommits,
