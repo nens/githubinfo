@@ -37,5 +37,6 @@ setup(name='githubinfo',
       extras_require={'test': tests_require},
       entry_points={
           'console_scripts': [
+            'testcommitinfo = githubinfo.commits:main',
           ]},
       )
