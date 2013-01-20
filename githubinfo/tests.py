@@ -142,3 +142,16 @@ class TestCommitCounterTest(unittest.TestCase):
         self.assertEquals(self.a.num_commits, 2)
         self.assertEquals(self.a.num_testcommits, 2)
         self.assertEquals(self.a.testfiles_changed, 6)
+
+    def test_no_percentage(self):
+        # No tests? No percentage. Those "(0%)" strings are boring.
+        # Printing out a ready-to-fill-in hitman contract would perhaps be
+        # better, but let's not get carried away right now with our Test
+        # Coverage Improvement Campaign, shall we?
+        self.a.num_commits = 20
+        self.assertEquals(self.a.percentage, '')
+
+    def test_percentage(self):
+        self.a.num_commits = 20
+        self.a.num_testcommits = 10
+        self.assertEquals(self.a.percentage, '(50%)')
