@@ -21,7 +21,16 @@ SETTINGS = {
         'ddsc',
         'lizardsystem',
         'nens',
-        ]
+        ],
+    'extra_projects': [
+        ('buildout', 'buildout'),
+        ('reinout', 'buildout'),
+        ('reinout', 'django-rest-framework'),
+        ('reinout', 'serverinfo'),
+        ('reinout', 'z3c.dependencychecker'),
+        ('rvanlaar', 'djangorecipe'),
+        ('zestsoftware', 'zest.releaser'),
+        ],
     }
 
 
@@ -82,9 +91,11 @@ class Commit(object):
 
 
 class TestCommitCounter(object):
-    num_commits = 0
-    num_testcommits = 0
-    testfiles_changed = 0
+
+    def __init__(self):
+        self.num_commits = 0
+        self.num_testcommits = 0
+        self.testfiles_changed = 0
 
     def __cmp__(self, other):
         return cmp((-self.num_testcommits, self.num_commits),
@@ -118,10 +129,13 @@ class TestCommitCounter(object):
 
 class Project(TestCommitCounter):
 
-    def __init__(self, owner, project, users):
+    def __init__(self, owner, project, users,
+                 restrict_to_known_users=False):
+        super(Project, self).__init__()
         self.owner = owner
         self.name = project
         self.users = users
+        self.restrict_to_known_users = restrict_to_known_users
         debug("Loading project {}...".format(self.name))
         self.commits = self.load_project_commits()
         self.load_individual_commits()
@@ -133,6 +147,9 @@ class Project(TestCommitCounter):
     def load_individual_commits(self):
         for commit in self.commits:
             the_commit = Commit(commit)
+            if self.restrict_to_known_users:
+                if the_commit.user not in self.users:
+                    continue
             self.users[the_commit.user].add_commit(the_commit)
             self.add_commit(the_commit)
 
@@ -167,6 +184,12 @@ def main():
             project = Project(organisation, project_name, users)
             if project.is_active:
                 projects.append(project)
+
+    for (organisation, project_name) in SETTINGS['extra_projects']:
+        project = Project(organisation, project_name, users,
+                          restrict_to_known_users=True)
+        if project.is_active:
+            projects.append(project)
 
     users = users.values()  # Defaultdict isn't handy anymore here.
     users.sort()
