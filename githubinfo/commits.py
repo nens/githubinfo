@@ -128,7 +128,7 @@ class Project(TestCommitCounter):
 
     def load_project_commits(self):
         url = COMMITS_URL.format(owner=self.owner, project=self.name)
-        return grab_json(url, params={'since': since})
+        return grab_json(url, params={'since': since()})
 
     def load_individual_commits(self):
         for commit in self.commits:
