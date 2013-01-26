@@ -136,6 +136,8 @@ class Project(TestCommitCounter):
         self.name = project
         self.users = users
         self.restrict_to_known_users = restrict_to_known_users
+
+    def load(self):
         debug("Loading project {}...".format(self.name))
         self.commits = self.load_project_commits()
         self.load_individual_commits()
@@ -182,6 +184,7 @@ def main():
         project_names = [repo['name'] for repo in repos]
         for project_name in project_names:
             project = Project(organisation, project_name, users)
+            project.load()
             if project.is_active:
                 projects.append(project)
 

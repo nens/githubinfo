@@ -161,3 +161,28 @@ class TestCommitCounterTest(unittest.TestCase):
         with mock.patch('sys.stdout') as mock_stdout:
             self.a.print_info()
             self.assertTrue(mock_stdout.write.called)
+
+
+class ProjectTest(unittest.TestCase):
+
+    def setUp(self):
+        self.project = commits.Project('nens', 'githubinfo', {})
+
+    @mock.patch('githubinfo.commits.Project.load_project_commits')
+    @mock.patch('githubinfo.commits.Project.load_individual_commits')
+    def test_load(self, patched_1, patched_2):
+        # Calling load() loads the various json files.
+        self.project.load()
+        self.assertTrue(patched_1.called)
+        self.assertTrue(patched_2.called)
+
+    def test_is_active1(self):
+        self.assertFalse(self.project.is_active)
+
+    def test_is_active2(self):
+        self.project.num_commits = 428391
+        self.assertTrue(self.project.is_active)
+
+    @mock.patch('githubinfo.commits.grab_json', lambda url, params: [])
+    def test_load_project_commits(self):
+        self.assertEquals(self.project.load_project_commits(), [])
