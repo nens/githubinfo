@@ -191,6 +191,7 @@ def main():
     for (organisation, project_name) in SETTINGS['extra_projects']:
         project = Project(organisation, project_name, users,
                           restrict_to_known_users=True)
+        project.load()
         if project.is_active:
             projects.append(project)
 
