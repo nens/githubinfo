@@ -5,6 +5,10 @@ Changelog of githubinfo
 0.1 (unreleased)
 ----------------
 
+- Detecting doctests, too. For ``.rst`` and ``.txt`` files, we search for
+  ``>>>`` in the commit's patch, that's a pretty good indication of a doctest
+  commit.
+
 - Loading commits from branches, too.
 
 - Added option for extra projects outside of the main ones. Commits in here

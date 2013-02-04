@@ -19,8 +19,8 @@ SETTINGS = {
     'auth': None,  # Set it to ('username', 'very_secret').
     'days': 7,
     'organisations': [
-        # 'ddsc',
-        # 'lizardsystem',
+        'ddsc',
+        'lizardsystem',
         'nens',
         ],
     'extra_projects': [
@@ -63,13 +63,18 @@ def grab_json(url, params=None):
     return result
 
 
-def is_testfile(filepath):
+def is_testfile(fileinfo):
+    filepath = fileinfo['filename']
     if 'testsettings.py' in filepath:
         # This one almost always doesn't have anything to do with
         # an added test.
         return False
     if 'test' in filepath:
         return True
+    if filepath.endswith('.rst') or filepath.endswith('.txt'):
+        # Possible doctest.
+        if '>>>' in fileinfo['patch']:
+            return True
     return False
 
 
@@ -91,7 +96,7 @@ class Commit(object):
         commit_url = the_dict['url']
         commit_info = grab_json(commit_url)
         for changed_file in commit_info.get('files', []):
-            if is_testfile(changed_file['filename']):
+            if is_testfile(changed_file):
                 self.num_testfiles_changed += 1
                 debug("Test file: {}".format(changed_file['filename']))
 

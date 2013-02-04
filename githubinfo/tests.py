@@ -53,16 +53,27 @@ class UtilitiesTest(unittest.TestCase):
         self.assertTrue(len(result) > 30)
 
     def test_is_testfile1(self):
-        self.assertTrue(commits.is_testfile('myproject/tests.py'))
+        self.assertTrue(commits.is_testfile(
+                {'filename': 'myproject/tests.py'}))
 
     def test_is_testfile2(self):
-        self.assertTrue(commits.is_testfile('myproject/test_thingy.js'))
+        self.assertTrue(commits.is_testfile(
+                {'filename': 'myproject/test_thingy.js'}))
 
     def test_is_testfile3(self):
-        self.assertFalse(commits.is_testfile('myproject/testsettings.py'))
+        self.assertFalse(commits.is_testfile(
+                {'filename': 'myproject/testsettings.py'}))
 
     def test_is_testfile4(self):
-        self.assertFalse(commits.is_testfile('myproject/README.rst'))
+        self.assertFalse(commits.is_testfile(
+                {'filename': 'myproject/README.rst',
+                 'patch': ''}))
+
+    def test_is_testfile5(self):
+        # Detect relevant changes in doctests.
+        self.assertTrue(commits.is_testfile(
+                {'filename': 'myproject/something.rst',
+                 'patch': '@@ -1,6 +1,12 @@\n >>> print("reinout")'}))
 
     @mock.patch('githubinfo.commits.SETTINGS', {})
     def test_load_custom_settings(self):
@@ -73,11 +84,13 @@ class UtilitiesTest(unittest.TestCase):
 
 
 def mock_commit_grabber1(url):
-    return {'files': [{'filename': 'myproject/README.txt'}]}
+    return {'files': [{'filename': 'myproject/README.txt',
+                       'patch': ''}]}
 
 
 def mock_commit_grabber2(url):
-    return {'files': [{'filename': 'myproject/README.txt'},
+    return {'files': [{'filename': 'myproject/README.txt',
+                       'patch': ''},
                       {'filename': 'myproject/tests.py'}]}
 
 
