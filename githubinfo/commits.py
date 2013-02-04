@@ -78,7 +78,7 @@ def load_custom_settings(settings_file='settings.json'):
     """
     # Note: settings_file is only a kwarg to make it testable.
     if os.path.exists(settings_file):
-        custom_settings = json.loads(open('settings.json').read())
+        custom_settings = json.loads(open(settings_file).read())
         SETTINGS.update(custom_settings)
 
 
