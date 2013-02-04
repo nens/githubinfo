@@ -163,6 +163,12 @@ class TestCommitCounterTest(unittest.TestCase):
             self.assertTrue(mock_stdout.write.called)
 
 
+class MockCommit(mock.Mock):
+    user = 'reinout'
+    is_testcommit = True
+    num_testfiles_changed = 1
+
+
 class ProjectTest(unittest.TestCase):
 
     def setUp(self):
@@ -186,3 +192,29 @@ class ProjectTest(unittest.TestCase):
     @mock.patch('githubinfo.commits.grab_json', lambda url, params: [])
     def test_load_project_commits(self):
         self.assertEquals(self.project.load_project_commits(), [])
+
+    @mock.patch('githubinfo.commits.Commit', MockCommit)
+    def test_load_individual_commits(self):
+        self.project.commits = ['we_dont_care_what_goes_into_the_mock']
+        self.project.users['reinout'] = commits.User()
+        self.project.load_individual_commits()
+        self.assertEquals(self.project.users['reinout'].num_commits, 1)
+        self.assertEquals(self.project.num_commits, 1)
+
+    @mock.patch('githubinfo.commits.Commit', MockCommit)
+    def test_load_individual_commits_with_restriction1(self):
+        # Add a commit that is a known user.
+        self.project.restrict_to_known_users = True
+        self.project.commits = ['we_dont_care_what_goes_into_the_mock']
+        self.project.users['reinout'] = commits.User()
+        self.project.load_individual_commits()
+        self.assertEquals(self.project.users['reinout'].num_commits, 1)
+        self.assertEquals(self.project.num_commits, 1)
+
+    @mock.patch('githubinfo.commits.Commit', MockCommit)
+    def test_load_individual_commits_with_restriction2(self):
+        # Add a commit that is not a known user: it isn't added.
+        self.project.restrict_to_known_users = True
+        self.project.commits = ['we_dont_care_what_goes_into_the_mock']
+        self.project.load_individual_commits()
+        self.assertEquals(self.project.num_commits, 0)
