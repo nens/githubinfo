@@ -124,7 +124,7 @@ class TestCommitCounterTest(unittest.TestCase):
         some_list.sort()
         self.assertEquals(some_list[0], self.a)
 
-    def test_sorting(self):
+    def test_sorting2(self):
         # Equal qua testcommits? Percentage wins.
         self.a.num_testcommits = 10
         self.b.num_testcommits = 10
@@ -183,13 +183,15 @@ class ProjectTest(unittest.TestCase):
     def setUp(self):
         self.project = commits.Project('nens', 'githubinfo', {})
 
+    @mock.patch('githubinfo.commits.Project.load_branches')
     @mock.patch('githubinfo.commits.Project.load_project_commits')
     @mock.patch('githubinfo.commits.Project.load_individual_commits')
-    def test_load(self, patched_1, patched_2):
+    def test_load(self, patched_1, patched_2, patched_3):
         # Calling load() loads the various json files.
         self.project.load()
         self.assertTrue(patched_1.called)
         self.assertTrue(patched_2.called)
+        self.assertTrue(patched_3.called)
 
     def test_is_active1(self):
         self.assertFalse(self.project.is_active)
@@ -198,9 +200,24 @@ class ProjectTest(unittest.TestCase):
         self.project.num_commits = 428391
         self.assertTrue(self.project.is_active)
 
-    @mock.patch('githubinfo.commits.grab_json', lambda url, params: [])
+    @mock.patch('githubinfo.commits.grab_json', lambda url: [])
+    def test_load_branches(self):
+        self.assertEquals(self.project.load_branches(), [])
+
+    @mock.patch('githubinfo.commits.grab_json', lambda url: [
+            {'commit': {'sha': 'asdfghjkl'}},])
+    def test_load_branches2(self):
+        self.assertEquals(self.project.load_branches(), ['asdfghjkl'])
+
     def test_load_project_commits(self):
+        self.project.branch_SHAs = []
         self.assertEquals(self.project.load_project_commits(), [])
+
+    @mock.patch('githubinfo.commits.grab_json', lambda url, params: ['a'])
+    def test_load_project_commits2(self):
+        self.project.branch_SHAs = ['fsdfwrwesdfsdfsdf',
+                                    'dfsdrrterdxcxcvcx']
+        self.assertEquals(self.project.load_project_commits(), ['a', 'a'])
 
     @mock.patch('githubinfo.commits.Commit', MockCommit)
     def test_load_individual_commits(self):

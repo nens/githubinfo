@@ -11,6 +11,7 @@ import requests
 
 ORG_REPOS_URL = 'https://api.github.com/orgs/{organisation}/repos'
 COMMITS_URL = 'https://api.github.com/repos/{owner}/{project}/commits'
+BRANCHES_URL = 'https://api.github.com/repos/{owner}/{project}/branches'
 VERBOSE = True  # Just for debugging.
 
 # Settings are global and can be modified by some setup/init method.
@@ -18,8 +19,8 @@ SETTINGS = {
     'auth': None,  # Set it to ('username', 'very_secret').
     'days': 7,
     'organisations': [
-        'ddsc',
-        'lizardsystem',
+        # 'ddsc',
+        # 'lizardsystem',
         'nens',
         ],
     'extra_projects': [
@@ -148,12 +149,23 @@ class Project(TestCommitCounter):
 
     def load(self):
         debug("Loading project {}...".format(self.name))
+        self.branch_SHAs = self.load_branches()
         self.commits = self.load_project_commits()
         self.load_individual_commits()
 
+    def load_branches(self):
+        """Return SHAs of commits for branches."""
+        url = BRANCHES_URL.format(owner=self.owner, project=self.name)
+        branches = grab_json(url)
+        return [branch['commit']['sha'] for branch in branches]
+
     def load_project_commits(self):
+        result = []
         url = COMMITS_URL.format(owner=self.owner, project=self.name)
-        return grab_json(url, params={'since': since()})
+        for branch_SHA in self.branch_SHAs:
+            result += grab_json(url, params={'since': since(),
+                                                    'sha': branch_SHA})
+        return result
 
     def load_individual_commits(self):
         for commit in self.commits:
