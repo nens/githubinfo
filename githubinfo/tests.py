@@ -8,6 +8,8 @@ import datetime
 import unittest
 import mock
 
+import pkg_resources
+
 from githubinfo import commits
 
 FIXED_DATE = datetime.datetime(year=1972, month=12, day=25)
@@ -50,17 +52,24 @@ class UtilitiesTest(unittest.TestCase):
         print(result)
         self.assertTrue(len(result) > 30)
 
-    def is_testfile1(self):
+    def test_is_testfile1(self):
         self.assertTrue(commits.is_testfile('myproject/tests.py'))
 
-    def is_testfile2(self):
+    def test_is_testfile2(self):
         self.assertTrue(commits.is_testfile('myproject/test_thingy.js'))
 
-    def is_testfile3(self):
+    def test_is_testfile3(self):
         self.assertFalse(commits.is_testfile('myproject/testsettings.py'))
 
-    def is_testfile4(self):
+    def test_is_testfile4(self):
         self.assertFalse(commits.is_testfile('myproject/README.rst'))
+
+    @mock.patch('githubinfo.commits.SETTINGS', {})
+    def test_load_custom_settings(self):
+        testsettings = pkg_resources.resource_filename('githubinfo.commits',
+                                                       'testsettings.json')
+        commits.load_custom_settings(testsettings)
+        self.assertTrue('auth' in commits.SETTINGS)
 
 
 def mock_commit_grabber1(url):

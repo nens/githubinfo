@@ -72,6 +72,15 @@ def is_testfile(filepath):
     return False
 
 
+def load_custom_settings(settings_file='settings.json'):
+    """Update our default settings with the json found in the settings file.
+    """
+    # Note: settings_file is only a kwarg to make it testable.
+    if os.path.exists(settings_file):
+        custom_settings = json.loads(open('settings.json').read())
+        SETTINGS.update(custom_settings)
+
+
 class Commit(object):
     """Wrapper around a commit dict from github's API."""
 
@@ -170,10 +179,7 @@ class User(TestCommitCounter):
 
 
 def main():
-    # TODO: update settings.
-    if os.path.exists('settings.json'):
-        custom_settings = json.loads(open('settings.json').read())
-        SETTINGS.update(custom_settings)
+    load_custom_settings()
 
     users = defaultdict(User)
     projects = []
