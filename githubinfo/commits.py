@@ -73,7 +73,7 @@ def is_testfile(fileinfo):
         return True
     if filepath.endswith('.rst') or filepath.endswith('.txt'):
         # Possible doctest.
-        if '>>>' in fileinfo['patch']:
+        if '>>>' in fileinfo.get('patch', ''):
             return True
     return False
 
