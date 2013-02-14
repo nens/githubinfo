@@ -24,7 +24,7 @@ SETTINGS = {
         'nens',
         ],
     'extra_projects': [
-        ('buildout', 'buildout'),
+        # ('buildout', 'buildout'),
         ('reinout', 'buildout'),
         ('reinout', 'django-rest-framework'),
         ('reinout', 'serverinfo'),
