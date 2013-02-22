@@ -3,9 +3,11 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from collections import defaultdict
+from pprint import pprint
 import datetime
 import json
 import os
+import sys
 
 import requests
 
@@ -48,12 +50,17 @@ def since():
     return a_while_ago.isoformat()
 
 
-def grab_json(url, params=None):
+def grab_json(url, params=None, second_try=False):
     """Return json from URL, including handling pagination."""
     auth = SETTINGS['auth']
     if isinstance(auth, list):
         auth = tuple(auth)
     req = requests.get(url, auth=auth, params=params)
+    if req.status_code == 401 and not second_try:
+        # Unauthorized. Somehow this happens to me in rare cases.
+        # Retry it once.
+        print("Got a 401 unauthorized on %s, retrying it" % url)
+        return grab_json(url, params=params, second_try=True)
     result = req.json()
     if req.links.get('next'):
         # Paginated content, so we want to grab the rest.
@@ -169,11 +176,16 @@ class Project(TestCommitCounter):
         url = COMMITS_URL.format(owner=self.owner, project=self.name)
         for branch_SHA in self.branch_SHAs:
             result += grab_json(url, params={'since': since(),
-                                                    'sha': branch_SHA})
+                                             'sha': branch_SHA})
         return result
 
     def load_individual_commits(self):
         for commit in self.commits:
+            if not isinstance(commit, dict):
+                print("dict in commit isn't a dict: %r" % commit)
+                print("the full list of commits:")
+                pprint(self.commits)
+                sys.exit(1)
             the_commit = Commit(commit)
             if self.restrict_to_known_users:
                 if the_commit.user not in self.users:
