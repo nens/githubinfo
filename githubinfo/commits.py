@@ -62,6 +62,12 @@ def grab_json(url, params=None, second_try=False):
         print("Got a 401 unauthorized on %s, retrying it" % url)
         return grab_json(url, params=params, second_try=True)
     result = req.json()
+    is_expected_type = (isinstance(result, list) or isinstance(result, dict))
+    if not is_expected_type and not second_try:
+        # Wrong type. String error message, probably.
+        # Retry it once.
+        print("Got a wrong type (%r) on %s, retrying it" % (result, url))
+        return grab_json(url, params=params, second_try=True)
     if req.links.get('next'):
         # Paginated content, so we want to grab the rest.
         url = req.links['next']['url']
