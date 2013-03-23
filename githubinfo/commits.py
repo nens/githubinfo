@@ -167,7 +167,7 @@ class Project(TestCommitCounter):
 
     def load(self):
         debug("Loading project {}...".format(self.name))
-        self.branch_SHAs = self.load_branches()
+        self.branch_SHAs = list(self.load_branches())
         self.commits = self.load_project_commits()
         self.load_individual_commits()
 
@@ -175,7 +175,14 @@ class Project(TestCommitCounter):
         """Return SHAs of commits for branches."""
         url = BRANCHES_URL.format(owner=self.owner, project=self.name)
         branches = grab_json(url)
-        return [branch['commit']['sha'] for branch in branches]
+        for branch in branches:
+            try:
+                sha = branch['commit']['sha']
+                yield sha
+            except TypeError:
+                print("Wrong type while trying branch['commit']['sha']:")
+                print("%r" % branch)
+                raise
 
     def load_project_commits(self):
         result = []
