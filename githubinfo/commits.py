@@ -175,14 +175,9 @@ class Project(TestCommitCounter):
         """Return SHAs of commits for branches."""
         url = BRANCHES_URL.format(owner=self.owner, project=self.name)
         branches = grab_json(url)
-        for branch in branches:
-            try:
-                sha = branch['commit']['sha']
-                yield sha
-            except TypeError:
-                print("Wrong type while trying branch['commit']['sha']:")
-                print("%r" % branch)
-                raise
+        if not isinstance(branches, list):
+            print("Expected list, got %r" % branches)
+        return [branch['commit']['sha'] for branch in branches]
 
     def load_project_commits(self):
         result = []

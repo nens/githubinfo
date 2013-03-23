@@ -215,12 +215,12 @@ class ProjectTest(unittest.TestCase):
 
     @mock.patch('githubinfo.commits.grab_json', lambda url: [])
     def test_load_branches(self):
-        self.assertEquals(list(self.project.load_branches()), [])
+        self.assertEquals(self.project.load_branches(), [])
 
     @mock.patch('githubinfo.commits.grab_json', lambda url: [
             {'commit': {'sha': 'asdfghjkl'}},])
     def test_load_branches2(self):
-        self.assertEquals(list(self.project.load_branches()), ['asdfghjkl'])
+        self.assertEquals(self.project.load_branches(), ['asdfghjkl'])
 
     def test_load_project_commits(self):
         self.project.branch_SHAs = []
