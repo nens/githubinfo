@@ -167,7 +167,7 @@ class Project(TestCommitCounter):
 
     def load(self):
         debug("Loading project {}...".format(self.name))
-        self.branch_SHAs = list(self.load_branches())
+        self.branch_SHAs = self.load_branches()
         self.commits = self.load_project_commits()
         self.load_individual_commits()
 
@@ -176,7 +176,8 @@ class Project(TestCommitCounter):
         url = BRANCHES_URL.format(owner=self.owner, project=self.name)
         branches = grab_json(url)
         if not isinstance(branches, list):
-            print("Expected list, got %r" % branches)
+            print("Expected list, got %r, retrying." % branches)
+            return self.load_branches()
         return [branch['commit']['sha'] for branch in branches]
 
     def load_project_commits(self):
@@ -193,7 +194,8 @@ class Project(TestCommitCounter):
                 print("dict in commit isn't a dict: %r" % commit)
                 print("the full list of commits:")
                 pprint(self.commits)
-                sys.exit(1)
+                print("Continuing anyway...")
+                continue
             the_commit = Commit(commit)
             if self.restrict_to_known_users:
                 if the_commit.user not in self.users:
