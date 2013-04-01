@@ -47,7 +47,7 @@ class UtilitiesTest(unittest.TestCase):
     def test_grab_paginated_json(self):
         # This hits a real URL and incurs a rate limit...
         # lizardsystem has more than 30 repos, which is the pagination limit.
-        url = commits.ORG_REPOS_URL.format(organisation='lizardsystem')
+        url = commits.ORG_REPOS_URL.format(organization='lizardsystem')
         result = commits.grab_json(url)
         print(result)
         self.assertTrue(len(result) > 30)

@@ -1,4 +1,4 @@
 Credits
 =======
 
-- TODO started this library
+- `Reinout van Rees <http://reinout.vanrees.org>`_ started this program.

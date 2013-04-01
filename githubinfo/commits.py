@@ -10,7 +10,7 @@ import os
 
 import requests
 
-ORG_REPOS_URL = 'https://api.github.com/orgs/{organisation}/repos'
+ORG_REPOS_URL = 'https://api.github.com/orgs/{organization}/repos'
 COMMITS_URL = 'https://api.github.com/repos/{owner}/{project}/commits'
 BRANCHES_URL = 'https://api.github.com/repos/{owner}/{project}/branches'
 VERBOSE = True  # Just for debugging.
@@ -19,13 +19,13 @@ VERBOSE = True  # Just for debugging.
 SETTINGS = {
     'auth': None,  # Set it to ('username', 'very_secret').
     'days': 7,
-    'organisations': [
+    'organizations': [
         'ddsc',
         'lizardsystem',
         'nens',
         ],
     'extra_projects': [
-        # ('buildout', 'buildout'),
+        # ('organization', 'project'),
         ('reinout', 'buildout'),
         ('reinout', 'django-rest-framework'),
         ('reinout', 'serverinfo'),
@@ -222,18 +222,18 @@ def main():
     users = defaultdict(User)
     projects = []
 
-    for organisation in SETTINGS['organisations']:
-        url = ORG_REPOS_URL.format(organisation=organisation)
+    for organization in SETTINGS['organizations']:
+        url = ORG_REPOS_URL.format(organization=organization)
         repos = grab_json(url)
         project_names = [repo['name'] for repo in repos]
         for project_name in project_names:
-            project = Project(organisation, project_name, users)
+            project = Project(organization, project_name, users)
             project.load()
             if project.is_active:
                 projects.append(project)
 
-    for (organisation, project_name) in SETTINGS['extra_projects']:
-        project = Project(organisation, project_name, users,
+    for (organization, project_name) in SETTINGS['extra_projects']:
+        project = Project(organization, project_name, users,
                           restrict_to_known_users=True)
         project.load()
         if project.is_active:
@@ -251,13 +251,13 @@ indication ('more'), here are the commits that have the string
 'test' in of of the commit's touched filenames.
 
 Period: {period} days.
-Github organisations that I queried: {orgs}
+Github organizations that I queried: {orgs}
 
 Projects sorted by amount of commits with tests
 -----------------------------------------------
 
 """.format(period=SETTINGS['days'],
-            orgs=', '.join(SETTINGS['organisations'])))
+            orgs=', '.join(SETTINGS['organizations'])))
     for project in projects:
         project.print_info()
     print("""
