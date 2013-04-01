@@ -2,7 +2,7 @@ Changelog of githubinfo
 ===================================================
 
 
-0.1 (unreleased)
+1.0 (2013-04-01)
 ----------------
 
 - Added proper documentation and usage instructions to the README.
