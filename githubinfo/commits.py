@@ -243,8 +243,8 @@ def main():
     users.sort()
     projects.sort()
     print("""
-Nelen & Schuurmans test statistics
-==================================
+Test statistics
+===============
 
 We want more and better testing. For a quick and dirty quantity
 indication ('more'), here are the commits that have the string
