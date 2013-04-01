@@ -5,9 +5,11 @@ Changelog of githubinfo
 0.1 (unreleased)
 ----------------
 
+- Added proper documentation and usage instructions to the README.
+
 - Detecting doctests, too. For ``.rst`` and ``.txt`` files, we search for
   ``>>>`` in the commit's patch, that's a pretty good indication of a doctest
-  commit.
+  commit. I needed this for detecting my well-tested commits in zc.buildout.
 
 - Loading commits from branches, too.
 
