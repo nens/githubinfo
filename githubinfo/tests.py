@@ -91,10 +91,16 @@ class UtilitiesTest(unittest.TestCase):
         self.assertTrue('auth' in commits.SETTINGS)
 
     @mock.patch('sys.argv', ['githubinfo'])
-    def test_parse_commandline(self):
+    def test_parse_commandline1(self):
         # Just make sure it doesn't barf somewhere.
-        result = commits.parse_commandline()
-        self.assertEquals(result, None)
+        args = commits.parse_commandline()
+        self.assertEquals(args.verbose, False)
+
+    @mock.patch('sys.argv', ['githubinfo', '--show-config'])
+    def test_parse_commandline2(self):
+        with mock.patch('githubinfo.commits.show_config') as patched:
+            args = commits.parse_commandline()
+            self.assertTrue(patched.called)
 
 
 def mock_commit_grabber1(url):
