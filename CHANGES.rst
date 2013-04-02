@@ -2,7 +2,7 @@ Changelog of githubinfo
 ===================================================
 
 
-1.1 (unreleased)
+1.1 (2013-04-02)
 ----------------
 
 - Added optional export of the results to a JSON file. Useful if you want to
