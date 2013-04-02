@@ -9,7 +9,8 @@ Changelog of githubinfo
   format the output yourself, for instance to create a HTML page.
 
 - Added argument parsing via argparse. **Warning**: this requires python 2.7
-  at a minimum. I guess that's not a problem.
+  at a minimum. I guess that's not a problem. At least ``-h`` now gives a
+  proper usage message!
 
 - Added ``githubinfo.__version__`` attribute.
 
