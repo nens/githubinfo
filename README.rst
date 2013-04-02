@@ -120,7 +120,7 @@ double quotes around strings. Something like this::
 
     {"auth": ["reinout", "nogal_geheim"],
      "days": 8,
-     "organizations": [lizardsystem"],
+     "organizations": ["lizardsystem"],
      "extra_projects": []}
 
 auth
