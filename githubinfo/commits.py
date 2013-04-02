@@ -3,12 +3,13 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from collections import defaultdict
-from pprint import pprint
+# from pprint import pprint
 import argparse  # Note: python 2.7+
 import datetime
 import json
 import logging
 import os
+import sys
 
 import requests
 
@@ -37,6 +38,7 @@ SETTINGS = {
         ('zestsoftware', 'zest.releaser'),
         ],
     }
+SETTINGS_FILENAME = 'settings.json'
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +91,7 @@ def is_testfile(fileinfo):
     return False
 
 
-def load_custom_settings(settings_file='settings.json'):
+def load_custom_settings(settings_file=SETTINGS_FILENAME):
     """Update our default settings with the json found in the settings file.
     """
     # Note: settings_file is only a kwarg to make it testable.
@@ -215,6 +217,21 @@ class User(TestCommitCounter):
         TestCommitCounter.add_commit(self, commit)
 
 
+def show_config():
+    """Print the current configuration
+
+    TODO: add some usage instructions.
+    """
+    if not os.path.exists(SETTINGS_FILENAME):
+        logger.warn("""
+%s does not exist. See https://pypi.python.org/pypi/githubinfo for
+a configuration explanation.
+The defaults are probably not what you want :-)""")
+    logger.info("The current settings are:")
+    print(json.dumps(SETTINGS, indent=2))
+    sys.exit(0)
+
+
 def parse_commandline():
     """Parse commandline options and set up logging.
     """
@@ -223,7 +240,12 @@ def parse_commandline():
     parser.add_argument('-v',
                         '--verbose',
                         action='store_true',
+                        help="make logging more verbose",
                         dest='verbose')
+    parser.add_argument('--show-config',
+                        action='store_true',
+                        help="show the current configuration",
+                        dest='show_config')
     parser.add_argument('--version',
                         action='version',
                         version='%(prog)s ' + __version__)
@@ -235,10 +257,13 @@ def parse_commandline():
     requests_logger = logging.getLogger("requests")
     requests_logger.setLevel(logging.WARNING)
 
+    if args.show_config:
+        show_config()
+
 
 def main():
-    parse_commandline()
     load_custom_settings()
+    parse_commandline()
 
     users = defaultdict(User)
     projects = []
