@@ -41,6 +41,10 @@ It is just a simple single command and the output looks like this::
     Arjan Verkerk: 2 (8%)
     ...
 
+You can pass ``-h`` or ``--help`` to get usage information, for instance on
+how to increase the log level or on how to get the version number.
+
+
 Goal
 ----
 
@@ -144,6 +148,20 @@ extra_projects
 
     Note that only the committers that committed to your own organization get
     counted for these extra_projects. This way the list doesn't get polluted.
+
+To verify your settings, you can call ``testcommitinfo --show-config`` which
+will print the configuration as testcommitinfo sees it.
+
+
+Integration with your own systems
+---------------------------------
+
+Perhaps you want to include the output in some dashboard? Or you want to
+generate a nice HTML out of it?
+
+For those use cases, you can export a JSON file with the collected project and
+user information. Pass a JSON filename with the ``--json-output`` commandline
+option and you'll have everything you need.
 
 
 Problems?
