@@ -5,6 +5,12 @@ Changelog of githubinfo
 1.1 (unreleased)
 ----------------
 
+- Added optional export of the results to a JSON file. Useful if you want to
+  format the output yourself, for instance to create a HTML page.
+
+- Added argument parsing via argparse. **Warning**: this requires python 2.7
+  at a minimum. I guess that's not a problem.
+
 - Added ``githubinfo.__version__`` attribute.
 
 
