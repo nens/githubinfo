@@ -154,6 +154,12 @@ class TestCommitCounter(object):
                          tested=self.num_testcommits,
                          percentage=self.percentage))
 
+    def as_dict(self):
+        percentage = self.percentage.replace('(', '').replace(')', '')  # Sigh.
+        return dict(name=self.name,
+                    num_testcommits=self.num_testcommits,
+                    percentage=percentage)
+
 
 class Project(TestCommitCounter):
 
@@ -242,6 +248,10 @@ def parse_commandline():
                         action='store_true',
                         help="make logging more verbose",
                         dest='verbose')
+    parser.add_argument('--json-output',
+                        help="export results as json to [FILENAME]",
+                        metavar='FILENAME',
+                        dest='json_filename')
     parser.add_argument('--show-config',
                         action='store_true',
                         help="show the current configuration",
@@ -256,15 +266,14 @@ def parse_commandline():
     # And... shut up the ``requests`` library's logging.
     requests_logger = logging.getLogger("requests")
     requests_logger.setLevel(logging.WARNING)
-
     if args.show_config:
         show_config()
+    return args
 
 
-def main():
-    load_custom_settings()
-    parse_commandline()
-
+def collect_info():
+    """Return collected info on projects and users.
+    """
     users = defaultdict(User)
     projects = []
 
@@ -290,6 +299,13 @@ def main():
     users = users.values()  # Defaultdict isn't handy anymore here.
     users.sort()
     projects.sort()
+    return (projects, users)
+
+
+def main():
+    load_custom_settings()
+    args = parse_commandline()
+    projects, users = collect_info()
     print("""
 Test statistics
 ===============
@@ -316,6 +332,11 @@ Committers sorted by amount of commits with tests
 """)
     for user in users:
         user.print_info()
+    if args.json_filename:
+        output = {'projects': [project.as_dict() for project in projects],
+                  'users': [user.as_dict() for user in users]}
+        open(args.json_filename, 'w').write(json.dumps(output, indent=2))
+        logger.info("Wrote results to %s", args.json_filename)
 
 
 if __name__ == '__main__':
