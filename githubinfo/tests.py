@@ -10,9 +10,17 @@ import mock
 
 import pkg_resources
 
+import githubinfo
 from githubinfo import commits
 
 FIXED_DATE = datetime.datetime(year=1972, month=12, day=25)
+
+
+class VersionTest(unittest.TestCase):
+
+    def test_dunder_version(self):
+        # Test that we have a proper non-failing version attribute.
+        self.assertTrue(githubinfo.__version__)
 
 
 class UtilitiesTest(unittest.TestCase):
