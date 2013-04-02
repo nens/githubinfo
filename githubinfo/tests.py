@@ -204,6 +204,15 @@ class TestCommitCounterTest(unittest.TestCase):
             self.a.print_info()
             self.assertTrue(mock_stdout.write.called)
 
+    def test_as_dict(self):
+        self.a.name = 'Some name'
+        self.a.num_commits = 20
+        self.a.num_testcommits = 10
+        result = self.a.as_dict()
+        self.assertEquals(result['name'], 'Some name')
+        self.assertEquals(result['percentage'], '50%')
+        self.assertEquals(result['num_testcommits'], 10)
+
 
 class MockCommit(mock.Mock):
     user = 'reinout'
