@@ -231,6 +231,9 @@ def parse_commandline():
     loglevel = args.verbose and logging.DEBUG or logging.INFO
     logging.basicConfig(level=loglevel,
                         format="%(levelname)s: %(message)s")
+    # And... shut up the ``requests`` library's logging.
+    requests_logger = logging.getLogger("requests")
+    requests_logger.setLevel(logging.WARNING)
 
 
 def main():
@@ -241,6 +244,8 @@ def main():
     projects = []
 
     for organization in SETTINGS['organizations']:
+        logger.info("Looking for projects in organization %s...",
+                    organization)
         url = ORG_REPOS_URL.format(organization=organization)
         repos = grab_json(url)
         project_names = [repo['name'] for repo in repos]
