@@ -5,7 +5,8 @@ Changelog of githubinfo
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Small README fix: quote error in example config file. Thanks Maximilien
+  Riehl for noticing it!
 
 
 1.0 (2013-04-01)
