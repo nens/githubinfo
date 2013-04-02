@@ -4,16 +4,19 @@ from __future__ import division
 from __future__ import absolute_import
 from collections import defaultdict
 from pprint import pprint
+import argparse  # Note: python 2.7+
 import datetime
 import json
+import logging
 import os
 
 import requests
 
+from githubinfo import __version__
+
 ORG_REPOS_URL = 'https://api.github.com/orgs/{organization}/repos'
 COMMITS_URL = 'https://api.github.com/repos/{owner}/{project}/commits'
 BRANCHES_URL = 'https://api.github.com/repos/{owner}/{project}/branches'
-VERBOSE = True  # Just for debugging.
 
 # Settings are global and can be modified by some setup/init method.
 SETTINGS = {
@@ -35,11 +38,7 @@ SETTINGS = {
         ],
     }
 
-
-def debug(msg):
-    """Print message if we want debug stuff."""
-    if VERBOSE:
-        print(msg)
+logger = logging.getLogger(__name__)
 
 
 def since():
@@ -58,14 +57,14 @@ def grab_json(url, params=None, second_try=False):
     if req.status_code == 401 and not second_try:
         # Unauthorized. Somehow this happens to me in rare cases.
         # Retry it once.
-        print("Got a 401 unauthorized on %s, retrying it" % url)
+        logger.warn("Got a 401 unauthorized on %s, retrying it", url)
         return grab_json(url, params=params, second_try=True)
     result = req.json()
     is_expected_type = (isinstance(result, list) or isinstance(result, dict))
     if not is_expected_type and not second_try:
         # Wrong type. String error message, probably.
         # Retry it once.
-        print("Got a wrong type (%r) on %s, retrying it" % (result, url))
+        logger.warn("Got a wrong type (%r) on %s, retrying it", result, url)
         return grab_json(url, params=params, second_try=True)
     if req.links.get('next'):
         # Paginated content, so we want to grab the rest.
@@ -110,7 +109,7 @@ class Commit(object):
         for changed_file in commit_info.get('files', []):
             if is_testfile(changed_file):
                 self.num_testfiles_changed += 1
-                debug("Test file: {}".format(changed_file['filename']))
+                logger.debug("Test file: {}".format(changed_file['filename']))
 
     @property
     def is_testcommit(self):
@@ -165,7 +164,7 @@ class Project(TestCommitCounter):
         self.restrict_to_known_users = restrict_to_known_users
 
     def load(self):
-        debug("Loading project {}...".format(self.name))
+        logger.debug("Loading project {}...".format(self.name))
         self.branch_SHAs = self.load_branches()
         self.commits = self.load_project_commits()
         self.load_individual_commits()
@@ -175,7 +174,7 @@ class Project(TestCommitCounter):
         url = BRANCHES_URL.format(owner=self.owner, project=self.name)
         branches = grab_json(url)
         if not isinstance(branches, list):
-            print("Expected list, got %r, retrying." % branches)
+            logger.warn("Expected list, got %r, retrying.", branches)
             return self.load_branches()
         return [branch['commit']['sha'] for branch in branches]
 
@@ -190,10 +189,10 @@ class Project(TestCommitCounter):
     def load_individual_commits(self):
         for commit in self.commits:
             if not isinstance(commit, dict):
-                print("dict in commit isn't a dict: %r" % commit)
-                print("the full list of commits:")
-                pprint(self.commits)
-                print("Continuing anyway...")
+                logger.warn("dict in commit isn't a dict: %r" % commit)
+                logger.debug("the full list of commits:")
+                logger.debug(self.commits)
+                logger.warn("Continuing anyway...")
                 continue
             the_commit = Commit(commit)
             if self.restrict_to_known_users:
@@ -216,7 +215,26 @@ class User(TestCommitCounter):
         TestCommitCounter.add_commit(self, commit)
 
 
+def parse_commandline():
+    """Parse commandline options and set up logging.
+    """
+    parser = argparse.ArgumentParser(
+        description='Print number of test-related github commits.')
+    parser.add_argument('-v',
+                        '--verbose',
+                        action='store_true',
+                        dest='verbose')
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s ' + __version__)
+    args = parser.parse_args()
+    loglevel = args.verbose and logging.DEBUG or logging.INFO
+    logging.basicConfig(level=loglevel,
+                        format="%(levelname)s: %(message)s")
+
+
 def main():
+    parse_commandline()
     load_custom_settings()
 
     users = defaultdict(User)

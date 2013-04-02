@@ -5,7 +5,7 @@ Changelog of githubinfo
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Added ``githubinfo.__version__`` attribute.
 
 
 1.0.1 (2013-04-02)

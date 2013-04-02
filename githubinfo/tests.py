@@ -90,6 +90,12 @@ class UtilitiesTest(unittest.TestCase):
         commits.load_custom_settings(testsettings)
         self.assertTrue('auth' in commits.SETTINGS)
 
+    @mock.patch('sys.argv', ['githubinfo'])
+    def test_parse_commandline(self):
+        # Just make sure it doesn't barf somewhere.
+        result = commits.parse_commandline()
+        self.assertEquals(result, None)
+
 
 def mock_commit_grabber1(url):
     return {'files': [{'filename': 'myproject/README.txt',
